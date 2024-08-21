@@ -1,12 +1,18 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import *
 import random
 
 def home(request):
-    return render(request,'home.html')
-# Create your views here.
+    context = {'categories' : Category.objects.all()}
 
+    if request.GET.get('category'):
+        return redirect(f"/mcq/?category={request.GET.get('category')}")
+
+    return render(request,'home.html',context)
+
+def mcq(request):
+    return render(request , 'quiz.html' )
 
 def get_mcq(request):
     try:
