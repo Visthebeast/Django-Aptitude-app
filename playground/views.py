@@ -36,10 +36,19 @@ def submit_mcq(request):
     print(request.POST)
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
+        category_name = request.POST.get('category')
+        print("hoorrrAAY")
+        print(category_name)
+
         try:
             user = User.objects.get(user_id=user_id)
         except User.DoesNotExist:
             return HttpResponse("User not found", status=404)
+        
+        try:
+            category = Category.objects.get(category_name=category_name)
+        except Category.DoesNotExist:
+            return HttpResponse("Category not found", status=404)
 
         questions = Questions.objects.all()
         score = 0
@@ -67,8 +76,9 @@ def submit_mcq(request):
                 continue  # Skip to the next question if the answer is not found
 
         # Save the score to the user's record
-        user.score = max(score,user.score)
-        user.save()
+        score_obj, created = Score.objects.get_or_create(user=user, category=category)
+        score_obj.score = max(score_obj.score, score)  # Update only if the new score is higher
+        score_obj.save()
 
         return redirect('home')
 

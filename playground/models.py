@@ -54,7 +54,6 @@ class Answer(BaseModel):
 class User(BaseModel):
     name = models.CharField(max_length=100)
     user_id = models.CharField(max_length=50, unique=True)
-    score = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.name} ({self.user_id})"
@@ -67,5 +66,13 @@ class UserResponse(BaseModel):
 
     def __str__(self):
         return f"{self.user.name} - {self.question.question}"
+
+class Score(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+
+    def __str__(self) -> str:
+        return f"{self.user.username} - {self.category.category_name}: {self.score}"
 
 # #
