@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from .models import *
 import random
 from django.views.decorators.csrf import csrf_exempt
+from urllib.parse import urlencode
+
 
 
 def home(request):
@@ -22,10 +24,19 @@ def mcq(request):
     if not name or not user_id:
         return redirect('home')
 
-    user, created = User.objects.get_or_create(name=name, user_id=user_id)
+    # Check if the user_id already exists in the system
+    try:
+        existing_user = User.objects.get(user_id=user_id)
+        if existing_user.name != name:
+            # User ID exists but name does not match
+            query_string = urlencode({'error_message': 'User ID and name does not match!!'})
+            return HttpResponseRedirect(f'/?{query_string}')
+    except User.DoesNotExist:
+        # User ID does not exist, create a new user
+        User.objects.create(name=name, user_id=user_id)
 
     context = {
-        'user': user,
+        'user': User.objects.get(user_id=user_id),
         'category': category,
     }
 
