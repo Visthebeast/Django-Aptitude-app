@@ -48,7 +48,6 @@ class Answer(BaseModel):
         return self.answer 
     
 
-
 # #
 
 class User(BaseModel):
