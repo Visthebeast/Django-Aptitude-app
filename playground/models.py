@@ -11,6 +11,7 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+
 class Category(BaseModel):
     category_name = models.CharField(max_length=100)
 
@@ -45,3 +46,26 @@ class Answer(BaseModel):
 
     def __str__(self) -> str:
         return self.answer 
+    
+
+
+# #
+
+class User(BaseModel):
+    name = models.CharField(max_length=100)
+    user_id = models.CharField(max_length=50, unique=True)
+    score = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.name} ({self.user_id})"
+
+class UserResponse(BaseModel):
+    user = models.ForeignKey(User, related_name='responses', on_delete=models.CASCADE)
+    question = models.ForeignKey(Questions, related_name='responses', on_delete=models.CASCADE)
+    selected_answer = models.ForeignKey(Answer, related_name='responses', on_delete=models.CASCADE)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.name} - {self.question.question}"
+
+# #
