@@ -4,7 +4,7 @@ from .models import *
 import random
 from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import urlencode
-
+from django.utils import timezone
 
 
 def home(request):
@@ -16,40 +16,47 @@ def home(request):
     return render(request,'home.html',context)
 
 # #
+
 def mcq(request):
     name = request.GET.get('name')
     user_id = request.GET.get('user_id')
-    category = request.GET.get('category')
+    category_name = request.GET.get('category')
 
     if not name or not user_id:
         return redirect('home')
 
-    # Check if the user_id already exists in the system
     try:
         existing_user = User.objects.get(user_id=user_id)
         if existing_user.name != name:
-            # User ID exists but name does not match
             query_string = urlencode({'error_message': 'User ID and name does not match!!'})
             return HttpResponseRedirect(f'/?{query_string}')
     except User.DoesNotExist:
-        # User ID does not exist, create a new user
-        User.objects.create(name=name, user_id=user_id)
+        existing_user = User.objects.create(name=name, user_id=user_id)
+
+    try:
+        category = Category.objects.get(category_name=category_name)
+    except Category.DoesNotExist:
+        return redirect('home')
+
+    # Fetch or create a UserTimer for this user and category
+    user_timer, created = UserTimer.objects.get_or_create(user=existing_user, category=category)
+    if created:
+        user_timer.remaining_time = 300  #seconds
+        user_timer.save()
 
     context = {
-        'user': User.objects.get(user_id=user_id),
-        'category': category,
+        'user': existing_user,
+        'category': category_name,
+        'remaining_time': user_timer.remaining_time,
     }
 
     return render(request, 'mcq.html', context)
 
 @csrf_exempt
 def submit_mcq(request):
-    print(request.POST)
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
         category_name = request.POST.get('category')
-        print("hoorrrAAY")
-        print(category_name)
 
         try:
             user = User.objects.get(user_id=user_id)
@@ -61,7 +68,7 @@ def submit_mcq(request):
         except Category.DoesNotExist:
             return HttpResponse("Category not found", status=404)
 
-        questions = Questions.objects.all()
+        questions = Questions.objects.filter(category=category)
         score = 0
 
         for question in questions:
@@ -73,9 +80,7 @@ def submit_mcq(request):
 
                 if selected_answer.answer == correct_answer.answer:
                     score += question.marks
-                    print("correct answer")
 
-                # Save the user's response
                 UserResponse.objects.create(
                     user=user,
                     question=question,
@@ -83,17 +88,35 @@ def submit_mcq(request):
                     is_correct=(selected_answer.answer == correct_answer.answer)
                 )
             except Answer.DoesNotExist:
-                print(f"Answer not found for question ID: {question.pk} and selected answer: {selected_answer_text}")
                 continue  
 
-        # Save the score to the user's record
         score_obj, created = Score.objects.get_or_create(user=user, category=category)
         score_obj.score = max(score_obj.score, score)  # Update only if the new score is higher
         score_obj.save()
 
+        # Reset the timer after submission
+        UserTimer.objects.filter(user=user, category=category).update(remaining_time=300)
+
         return redirect('home')
 
     return redirect('home')
+
+def update_timer(request):
+    user_id = request.GET.get('user_id')
+    category_name = request.GET.get('category')
+    remaining_time = request.GET.get('remaining_time')
+
+    try:
+        user = User.objects.get(user_id=user_id)
+        category = Category.objects.get(category_name=category_name)
+        user_timer = UserTimer.objects.get(user=user, category=category)
+        user_timer.remaining_time = remaining_time
+        user_timer.save()
+    except (User.DoesNotExist, Category.DoesNotExist, UserTimer.DoesNotExist):
+        return JsonResponse({'status': False})
+
+    return JsonResponse({'status': True})
+
 # #
 
 def get_mcq(request):

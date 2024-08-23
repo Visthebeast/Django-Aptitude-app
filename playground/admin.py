@@ -31,7 +31,10 @@ class ScoreAdmin(admin.ModelAdmin):
     list_display = ('user', 'category', 'score')
     list_filter = ('category',)
 
+class UserTimerAdmin(admin.ModelAdmin):
+    list_display = ['user', 'category', 'remaining_time', 'created_at', 'updated_at']
 # #
+admin.site.register(UserTimer, UserTimerAdmin)
 
 admin.site.register(Score, ScoreAdmin)
 

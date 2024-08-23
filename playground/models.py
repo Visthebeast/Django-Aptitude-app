@@ -1,7 +1,6 @@
 from django.db import models
 import uuid
 import random
-# Create your models here.
 
 class BaseModel(models.Model):
     uid = models.UUIDField(primary_key=True , default=uuid.uuid4, editable=False)
@@ -73,5 +72,13 @@ class Score(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.user.username} - {self.category.category_name}: {self.score}"
+
+class UserTimer(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    remaining_time = models.IntegerField(default=300)  # Time in seconds
+
+    def __str__(self):
+        return f"{self.user.name} - {self.category.category_name}: {self.remaining_time} seconds remaining"
 
 # #

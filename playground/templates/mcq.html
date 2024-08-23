@@ -7,24 +7,71 @@
     <title>MCQ</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        #timer {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 2em;
+            color: white;
+            background-color: #ff6347; 
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+        }
+    </style>
+    
 </head>
 <body>
     <div class="container">
-        <h1>Category: {{ category }}</h1>
+        {% with minutes=remaining_time|divisibleby:60 %}
+        {% with seconds=remaining_time|add:"-60"|add:"%60" %}
+        <div id="timer">{{ minutes }}:{{ seconds|stringformat:"02d" }}</div> <!-- Timer Display -->
+        {% endwith %}
+        {% endwith %}
+        <h1>{{ category }}</h1>
         <form id="mcq-form" method="POST" action="{% url 'submit_mcq' %}">
             {% csrf_token %}
             <input type="hidden" name="user_id" value="{{ user.user_id }}">
             <input type="hidden" name="category" value="{{ category }}">
             <div id="mcq-container"></div>
             <div class="submit_id">
-            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                <button type="submit" class="btn btn-primary mt-3">Submit</button>
             </div>
         </form>
     </div>
     
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            fetch('/api/get-mcq/?category={{ category }}')
+            const userId = "{{ user.user_id }}";
+            const category = "{{ category }}";
+            let remainingTime = parseInt("{{ remaining_time }}"); // Convert to integer
+
+        if (isNaN(remainingTime)) {
+            console.error('Remaining time is not a valid number:', "{{ remaining_time }}");
+            remainingTime = 0; // Set to 0 or some default value
+        }
+
+
+            const timerInterval = setInterval(function() {
+                remainingTime -= 1;
+
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('mcq-form').submit(); // Auto-submit the form
+                } else {
+                    const minutes = Math.floor(remainingTime / 60);
+                    const seconds = remainingTime % 60;
+                    document.getElementById('timer').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+
+                // Update the remaining time in the backend
+                fetch(`/update_timer/?user_id=${userId}&category=${category}&remaining_time=${remainingTime}`);
+            }, 1000);
+
+            fetch(`/api/get-mcq/?category=${category}`)
             .then(response => response.json())
             .then(data => {
                 if (data.status) {
@@ -34,7 +81,7 @@
                                                 <p>${index + 1}. ${question.question} <span style="float: right;">Marks: ${question.marks}</span></p>`;
                         question.answers.forEach(answer => {
                             questionHtml += `<div class="form-check">
-                                                <input class="form-check-input" type="radio" name="question_${question.uid}" value="${answer.answer}" >
+                                                <input class="form-check-input" type="radio" name="question_${question.uid}" value="${answer.answer}">
                                                 <label class="form-check-label">${answer.answer}</label>
                                              </div>`;
                         });
