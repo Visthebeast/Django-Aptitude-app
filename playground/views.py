@@ -84,7 +84,7 @@ def submit_mcq(request):
                 )
             except Answer.DoesNotExist:
                 print(f"Answer not found for question ID: {question.pk} and selected answer: {selected_answer_text}")
-                continue  # Skip to the next question if the answer is not found
+                continue  
 
         # Save the score to the user's record
         score_obj, created = Score.objects.get_or_create(user=user, category=category)

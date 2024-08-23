@@ -40,3 +40,7 @@ body {
 .form-check-input {
     margin-right: 10px;
 }
+
+.submit_id{
+    display: flex;
+}
