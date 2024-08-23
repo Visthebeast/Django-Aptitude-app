@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCQ</title>
     {% load static %}
+    {% load filters %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
         #timer {
@@ -26,11 +27,7 @@
 </head>
 <body>
     <div class="container">
-        {% with minutes=remaining_time|divisibleby:60 %}
-        {% with seconds=remaining_time|add:"-60"|add:"%60" %}
-        <div id="timer">{{ minutes }}:{{ seconds|stringformat:"02d" }}</div> <!-- Timer Display -->
-        {% endwith %}
-        {% endwith %}
+        <div id="timer">{{ remaining_time|divisibleby:60 }}:{{ remaining_time|modulo:60 }}</div> <!-- Timer Display -->
         <h1>{{ category }}</h1>
         <form id="mcq-form" method="POST" action="{% url 'submit_mcq' %}">
             {% csrf_token %}
