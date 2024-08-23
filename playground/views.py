@@ -6,6 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import urlencode
 from django.utils import timezone
 from django.db.models import Max
+from django.contrib.auth.decorators import login_required
+
 
 
 def home(request):
@@ -39,10 +41,9 @@ def mcq(request):
     except Category.DoesNotExist:
         return redirect('home')
 
-    # Fetch or create a UserTimer for this user and category
     user_timer, created = UserTimer.objects.get_or_create(user=existing_user, category=category)
     if created:
-        user_timer.remaining_time = 300  #seconds
+        user_timer.remaining_time = 300  
         user_timer.save()
 
     context = {
@@ -72,7 +73,6 @@ def submit_mcq(request):
         questions = Questions.objects.filter(category=category)
         score = 0
         
-        #getting the latest response number
         max_response_number = UserResponse.objects.filter(user=user, question__category=category).aggregate(Max('response_number'))['response_number__max'] or 0
         max_response_number += 1
 
@@ -98,10 +98,9 @@ def submit_mcq(request):
                 continue  
 
         score_obj, created = Score.objects.get_or_create(user=user, category=category)
-        score_obj.score = max(score_obj.score, score)  # Update only if the new score is higher
+        score_obj.score = max(score_obj.score, score)  
         score_obj.save()
 
-        # Reset the timer after submission
         UserTimer.objects.filter(user=user, category=category).update(remaining_time=300)
 
         return redirect('home')
@@ -124,18 +123,18 @@ def update_timer(request):
 
     return JsonResponse({'status': True})
 
-# views.py
 from django.shortcuts import render
 from .models import User, UserResponse, Score
 
 from django.shortcuts import render
 from .models import User, UserResponse, Score, Category
 
+@login_required
 def dashboard(request):
     selected_user_id = request.GET.get('user_id')
     selected_category_name = request.GET.get('category')
     users = User.objects.all()
-    categories = Category.objects.all()  # Get all categories
+    categories = Category.objects.all()  
     
     if selected_user_id:
         selected_user = User.objects.get(user_id=selected_user_id)
@@ -159,7 +158,7 @@ def dashboard(request):
 
     return render(request, 'dashboard.html', {
         'users': users,
-        'categories': categories,  # Pass categories to the template
+        'categories': categories,
         'selected_user': selected_user,
         'selected_category': selected_category_name,
         'responses_grouped': responses_grouped,

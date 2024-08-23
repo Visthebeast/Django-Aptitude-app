@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="container">
-        <div id="timer">{{ remaining_time|div:60|zero_pad }}:{{ remaining_time|modulo:60|zero_pad }}</div> <!-- Timer Display -->
+        <div id="timer">{{ remaining_time|div:60|zero_pad }}:{{ remaining_time|modulo:60|zero_pad }}</div>
         <h1>{{ category }}</h1>
         <form id="mcq-form" method="POST" action="{% url 'submit_mcq' %}">
             {% csrf_token %}

@@ -68,6 +68,33 @@
         {% else %}
         <p>Select a user to view their details.</p>
         {% endif %}
+
+        <!-- Logout Button -->
+        <div class="logout-button">
+            <form method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Logout</button>
+                <style>
+                .logout-btn {
+                    background-color: #c93939; 
+                    color: white; 
+                    border: none; 
+                    border-radius: 5px;
+                    padding: 10px 20px;
+                    font-size: 16px; 
+                    cursor: pointer; 
+                    transition: background-color 0.3s ease; 
+                }
+                
+                .logout-btn:hover {
+                    background-color: #da3134; 
+                }
+                
+                .logout-btn:focus {
+                    outline: none; 
+                }</style>
+            </form>
+        </div>
     </div>
 </body>
 </html>
