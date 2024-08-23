@@ -71,7 +71,7 @@ class Score(BaseModel):
     score = models.IntegerField(default=0)
 
     def __str__(self) -> str:
-        return f"{self.user.username} - {self.category.category_name}: {self.score}"
+        return f"{self.user.name} - {self.category.category_name}: {self.score}"
 
 class UserTimer(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
