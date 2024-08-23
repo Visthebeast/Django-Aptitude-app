@@ -61,6 +61,7 @@ class UserResponse(BaseModel):
     question = models.ForeignKey(Questions, related_name='responses', on_delete=models.CASCADE)
     selected_answer = models.ForeignKey(Answer, related_name='responses', on_delete=models.CASCADE)
     is_correct = models.BooleanField(default=False)
+    response_number = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"{self.user.name} - {self.question.question}"

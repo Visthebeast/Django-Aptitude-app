@@ -22,6 +22,17 @@
                         </option>
                     {% endfor %}
                 </select>
+
+                {% if selected_user %}
+                <label for="category">Select Category:</label>
+                <select name="category" id="category" onchange="this.form.submit()">
+                    {% for category in categories %}
+                        <option value="{{ category.category_name }}" {% if category.category_name == selected_category %}selected{% endif %}>
+                            {{ category.category_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% endif %}
             </form>
         </div>
 
@@ -35,14 +46,25 @@
             </ul>
         </div>
 
+        {% if selected_category %}
         <div class="section">
-            <h2>Responses for {{ selected_user.name }} ({{ selected_user.user_id }})</h2>
-            <ul>
-                {% for response in responses %}
-                    <li>{{ response.question }} - {{ response.selected_answer }} - {{ response.is_correct }}</li>
-                {% endfor %}
-            </ul>
+            <h2>Responses for {{ selected_user.name }} ({{ selected_user.user_id }}) in {{ selected_category }}</h2>
+            {% for response_number, response_list in responses_grouped.items %}
+            <div class="response-group">
+                <h3>Attempt {{ response_number }}</h3>
+                <ul>
+                    {% for response in response_list %}
+                    <li>
+                        <strong>Question:</strong> {{ response.question }}<br>
+                        <strong>Your Answer:</strong> {{ response.selected_answer }}<br>
+                        <strong>Correct:</strong> {% if response.is_correct %}Yes{% else %}No{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
         </div>
+        {% endif %}
         {% else %}
         <p>Select a user to view their details.</p>
         {% endif %}

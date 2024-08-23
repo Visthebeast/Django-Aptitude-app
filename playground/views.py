@@ -5,6 +5,7 @@ import random
 from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import urlencode
 from django.utils import timezone
+from django.db.models import Max
 
 
 def home(request):
@@ -70,6 +71,10 @@ def submit_mcq(request):
 
         questions = Questions.objects.filter(category=category)
         score = 0
+        
+        #getting the latest response number
+        max_response_number = UserResponse.objects.filter(user=user, question__category=category).aggregate(Max('response_number'))['response_number__max'] or 0
+        max_response_number += 1
 
         for question in questions:
             selected_answer_text = request.POST.get(f'question_{question.pk}')
@@ -81,11 +86,13 @@ def submit_mcq(request):
                 if selected_answer.answer == correct_answer.answer:
                     score += question.marks
 
+
                 UserResponse.objects.create(
                     user=user,
                     question=question,
                     selected_answer=selected_answer,
-                    is_correct=(selected_answer.answer == correct_answer.answer)
+                    is_correct=(selected_answer.answer == correct_answer.answer),
+                    response_number=max_response_number
                 )
             except Answer.DoesNotExist:
                 continue  
@@ -121,25 +128,44 @@ def update_timer(request):
 from django.shortcuts import render
 from .models import User, UserResponse, Score
 
+from django.shortcuts import render
+from .models import User, UserResponse, Score, Category
+
 def dashboard(request):
     selected_user_id = request.GET.get('user_id')
+    selected_category_name = request.GET.get('category')
     users = User.objects.all()
+    categories = Category.objects.all()  # Get all categories
     
     if selected_user_id:
         selected_user = User.objects.get(user_id=selected_user_id)
-        responses = UserResponse.objects.filter(user=selected_user)
+        if selected_category_name:
+            selected_category = Category.objects.get(category_name=selected_category_name)
+            responses = UserResponse.objects.filter(user=selected_user, question__category=selected_category)
+        else:
+            responses = UserResponse.objects.filter(user=selected_user)
+        
+        responses_grouped = {}
+        for response in responses.order_by('response_number', 'question__category'):
+            if response.response_number not in responses_grouped:
+                responses_grouped[response.response_number] = []
+            responses_grouped[response.response_number].append(response)
+        
         scores = Score.objects.filter(user=selected_user)
     else:
         selected_user = None
-        responses = []
+        responses_grouped = {}
         scores = []
 
     return render(request, 'dashboard.html', {
         'users': users,
+        'categories': categories,  # Pass categories to the template
         'selected_user': selected_user,
-        'responses': responses,
+        'selected_category': selected_category_name,
+        'responses_grouped': responses_grouped,
         'scores': scores
     })
+
 
 
 # #

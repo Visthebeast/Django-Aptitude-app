@@ -23,7 +23,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class UserResponseAdmin(admin.ModelAdmin):
-    list_display = ('user', 'question', 'selected_answer', 'is_correct')
+    list_display = ('user', 'question', 'selected_answer', 'is_correct', 'response_number')
     search_fields = ('user__name', 'question__question')
 
 class ScoreAdmin(admin.ModelAdmin):
