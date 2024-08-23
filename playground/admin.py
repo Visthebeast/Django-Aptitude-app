@@ -1,7 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
-
 from .models import *
 
 
@@ -16,6 +13,7 @@ class QuestionAdmin(admin.ModelAdmin):
 # #
 class UserAdmin(admin.ModelAdmin):
     list_display = ('name', 'user_id', 'get_category_scores')
+    search_fields = ('name', 'user_id')
 
     def get_category_scores(self, obj):
         scores = obj.score_set.all()
@@ -26,13 +24,17 @@ class UserAdmin(admin.ModelAdmin):
 
 class UserResponseAdmin(admin.ModelAdmin):
     list_display = ('user', 'question', 'selected_answer', 'is_correct')
+    search_fields = ('user__name', 'question__question')
 
 class ScoreAdmin(admin.ModelAdmin):
     list_display = ('user', 'category', 'score')
     list_filter = ('category',)
+    search_fields = ('user__name', 'category__category_name')
 
 class UserTimerAdmin(admin.ModelAdmin):
     list_display = ['user', 'category', 'remaining_time', 'created_at', 'updated_at']
+    search_fields = ('user__name', 'category__category_name')
+
 # #
 admin.site.register(UserTimer, UserTimerAdmin)
 

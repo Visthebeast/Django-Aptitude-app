@@ -117,6 +117,31 @@ def update_timer(request):
 
     return JsonResponse({'status': True})
 
+# views.py
+from django.shortcuts import render
+from .models import User, UserResponse, Score
+
+def dashboard(request):
+    selected_user_id = request.GET.get('user_id')
+    users = User.objects.all()
+    
+    if selected_user_id:
+        selected_user = User.objects.get(user_id=selected_user_id)
+        responses = UserResponse.objects.filter(user=selected_user)
+        scores = Score.objects.filter(user=selected_user)
+    else:
+        selected_user = None
+        responses = []
+        scores = []
+
+    return render(request, 'dashboard.html', {
+        'users': users,
+        'selected_user': selected_user,
+        'responses': responses,
+        'scores': scores
+    })
+
+
 # #
 
 def get_mcq(request):

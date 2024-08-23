@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Summary</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>User Summary</h1>
+        
+        <div class="dropdown">
+            <form method="GET" action="{% url 'dashboard' %}">
+                <label for="user">Select User:</label>
+                <select name="user_id" id="user" onchange="this.form.submit()">
+                    <option value="">-- Select a User --</option>
+                    {% for user in users %}
+                        <option value="{{ user.user_id }}" {% if user == selected_user %}selected{% endif %}>
+                            {{ user.name }} ({{ user.user_id }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        {% if selected_user %}
+        <div class="section">
+            <h2>Scores for {{ selected_user.name }} ({{ selected_user.user_id }})</h2>
+            <ul>
+                {% for score in scores %}
+                    <li>{{ score.category }} - {{ score.score }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Responses for {{ selected_user.name }} ({{ selected_user.user_id }})</h2>
+            <ul>
+                {% for response in responses %}
+                    <li>{{ response.question }} - {{ response.selected_answer }} - {{ response.is_correct }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        <p>Select a user to view their details.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -7,6 +7,6 @@ urlpatterns = [
     path('mcq/',views.mcq,name="mcq"),
     path('submit-mcq/', views.submit_mcq, name="submit_mcq"),
     path('update_timer/', views.update_timer, name='update_timer'),
-
+    path('dashboard/', views.dashboard, name='dashboard'),
 ]
 
